@@ -9,19 +9,19 @@ namespace emr_blockchain.Models
     public class Blockchain : IBlockchain
     {
         private List<IBlock> _chain; 
-        private List<Dictionary<string, string>> _currentTransactions; 
+        private List<ITransaction> _currentTransactions; 
         public IBlock LastBlock => _chain[_chain.Count - 1];
         public ICollection<IBlock> Chain => _chain;
 
         public Blockchain()
         {
             _chain = new List<IBlock>();
-            _currentTransactions = new List<Dictionary<string, string>>();
+            _currentTransactions = new List<ITransaction>();
             
-            NewBlock(1, 100);
+            NewBlock(1, "100");
         }
         
-        public IBlock NewBlock(int proof, int? previousHash = null)
+        public IBlock NewBlock(int proof, string previousHash = null)
         {
             var block = new Block()
             {
@@ -29,7 +29,7 @@ namespace emr_blockchain.Models
                 TimeStamp = DateTime.Now,
                 Transactions = _currentTransactions,
                 Proof = proof, 
-                PreviousHash = previousHash,
+                PreviousHash = previousHash ?? Hash(LastBlock),
             };
 
             _chain.Add(block);
@@ -37,13 +37,13 @@ namespace emr_blockchain.Models
             return block;
         }
 
-        public int NewTransaction(string sender, string recipient, string amount)
+        public int NewTransaction(string sender, string recipient, int amount)
         {
-            _currentTransactions.Add(new Dictionary<string, string>
+            _currentTransactions.Add(new Transaction()
             {
-                {"sender", sender},
-                {"recipient", recipient},
-                {"amount", amount}
+                Sender = sender,
+                Recipient = recipient,
+                Amount = amount
             });
 
             return LastBlock.Index + 1;

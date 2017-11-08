@@ -9,10 +9,10 @@ namespace emr_blockchain.Models
 
         public DateTime TimeStamp { get; set;}
 
-        public List<Dictionary<string, string>> Transactions { get; set;}
+        public List<ITransaction> Transactions { get; set;}
 
         public int Proof { get; set;}
 
-        public int? PreviousHash { get; set;}
+        public string PreviousHash { get; set;}
     }
 }

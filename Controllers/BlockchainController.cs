@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using emr_blockchain.Models;
 using emr_blockchain.Models.Dto;
+using System;
 
 namespace emr_blockchain.Controllers
 {
     public class BlockchainController : Controller
     {
-        private Blockchain _blockchain = new Blockchain();
+        private static Blockchain _blockchain = new Blockchain();
 
         [HttpGet("/mine")]
         public IActionResult Mine()
@@ -15,9 +16,8 @@ namespace emr_blockchain.Controllers
             var lastProof = lastBlock.Proof;
             var proof = _blockchain.ProofOfWork(lastProof);
 
-            _blockchain.NewTransaction("0", "unique" ,"1");
+            _blockchain.NewTransaction("0", "unique" ,1);
             _blockchain.NewBlock(proof);
-
             return Ok(_blockchain.LastBlock);
         }
 

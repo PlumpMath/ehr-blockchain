@@ -18,7 +18,7 @@ namespace emr_blockchain.Models.Dto
 
         public int Proof => _block.Proof;
 
-        public int? PreviousHash => _block.PreviousHash;
+        public string PreviousHash => _block.PreviousHash;
 
         public ICollection<Dictionary<string, string>> Transactions {get; set;}
 
