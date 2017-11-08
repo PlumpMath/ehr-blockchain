@@ -27,7 +27,7 @@ namespace emr_blockchain.Models
             {
                 Index = _chain.Count + 1,
                 TimeStamp = DateTime.Now,
-                Transactions = _currentTransactions,
+                Transactions = new List<ITransaction>(_currentTransactions),
                 Proof = proof, 
                 PreviousHash = previousHash ?? Hash(LastBlock),
             };
