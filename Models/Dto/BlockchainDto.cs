@@ -12,6 +12,6 @@ namespace emr_blockchain.Models.Dto
         }
 
         public ICollection<IBlock> chain => _chain.Chain;
-        public int Length => _chain.Chain.ToList().Count;
+        public int length => _chain.Chain.ToList().Count;
     }
 }

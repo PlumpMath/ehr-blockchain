@@ -12,6 +12,7 @@ namespace emr_blockchain.Models
         private List<ITransaction> _currentTransactions; 
         public IBlock LastBlock => _chain[_chain.Count - 1];
         public ICollection<IBlock> Chain => _chain;
+        public ICollection<ITransaction> CurrentTransactions => _currentTransactions;
 
         public Blockchain()
         {
