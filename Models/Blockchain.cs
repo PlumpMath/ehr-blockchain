@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
+using System.Net;
+using System.IO;
+using emr_blockchain.Models.Dto;
 
 namespace emr_blockchain.Models
 {
@@ -71,6 +74,42 @@ namespace emr_blockchain.Models
             }
 
             return true;
+        }
+
+        public bool ResolveConflicts()
+        {
+            // var neighbors = _nodes; 
+            // var newChain = new List<IBlock>();
+            // int maxLength = _chain.Count;
+
+            // foreach (var node in neighbors)
+            // {
+            //     var url = $"{node}/chain";
+            //     HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
+            //     request.ContentType="application/json; charset=utf-8";
+            //     var response = (HttpWebResponse) request.GetResponse();    
+            //     string text; 
+            //     using (var sr = new StreamReader(response.GetResponseStream()))
+            //     {
+            //         text = sr.ReadToEnd();
+            //     }
+
+            //     var chainobj = JsonConvert.DeserializeObject<BlockchainDto>(text);
+            // }
+
+            string node = "http://127.0.0.1:5001";
+            var url = $"{node}/chain";
+            HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
+            request.ContentType="application/json; charset=utf-8";
+            var response = (HttpWebResponse) request.GetResponse();    
+            string text; 
+            using (var sr = new StreamReader(response.GetResponseStream()))
+            {
+                text = sr.ReadToEnd();
+            }
+
+            var chainobj = JsonConvert.DeserializeObject<BlockchainDto>(text);
+            return false; 
         }
 
         public int ProofOfWork(int lastProof)

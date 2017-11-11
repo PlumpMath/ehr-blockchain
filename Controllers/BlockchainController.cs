@@ -62,5 +62,12 @@ namespace emr_blockchain.Controllers
                 return BadRequest(ModelState);
             return Ok(chain);
         }
+
+        [HttpGet("/debugthis")]
+        public IActionResult DebugThis()
+        {
+            _blockchain.ResolveConflicts();
+            return Ok();
+        }
     }
 }
