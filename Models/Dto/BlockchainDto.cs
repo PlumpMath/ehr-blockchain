@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace emr_blockchain.Models.Dto
@@ -11,7 +12,10 @@ namespace emr_blockchain.Models.Dto
             _chain = chain;
         }
 
-        public ICollection<IBlock> chain => _chain.Chain;
-        public int length => _chain.Chain.ToList().Count;
+        [Required]
+        public List<IBlock> Chain => _chain.Chain;
+        
+        [Required]
+        public int Length => _chain.Chain.Count;
     }
 }

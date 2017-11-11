@@ -53,10 +53,14 @@ namespace emr_blockchain.Controllers
             });
         }
 
-        [HttpGet("/debug")]
-        public IActionResult Debug()
+        [HttpPost("/debug")]
+        public IActionResult Debug([FromBody] DebugBlockchainDto chain)
         {
-            return Ok();
+            if (chain == null)
+                return BadRequest();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            return Ok(chain);
         }
     }
 }

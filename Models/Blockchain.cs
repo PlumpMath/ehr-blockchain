@@ -10,15 +10,22 @@ namespace emr_blockchain.Models
     {
         private List<IBlock> _chain; 
         private List<ITransaction> _currentTransactions; 
+        private HashSet<string> _nodes; 
+
         public IBlock LastBlock => _chain[_chain.Count - 1];
-        public ICollection<IBlock> Chain => _chain;
-        public ICollection<ITransaction> CurrentTransactions => _currentTransactions;
+        public List<IBlock> Chain
+        {
+            get => _chain;
+            set => _chain = value;
+        }
+        public List<ITransaction> CurrentTransactions => _currentTransactions;
 
         public Blockchain()
         {
             _chain = new List<IBlock>();
             _currentTransactions = new List<ITransaction>();
-            
+            _nodes = new HashSet<string>();
+
             NewBlock(1, "100");
         }
         
@@ -48,6 +55,22 @@ namespace emr_blockchain.Models
             });
 
             return LastBlock.Index + 1;
+        }
+
+        public bool ValidChain(List<IBlock> chain)
+        {
+            var lastBlock = chain[0];
+            int currentIndex = 1; 
+            while (currentIndex < chain.Count)
+            {
+                var block = chain[currentIndex];
+                if (block.PreviousHash != Hash(lastBlock))
+                    return false;
+                lastBlock  = block; 
+                currentIndex++;
+            }
+
+            return true;
         }
 
         public int ProofOfWork(int lastProof)

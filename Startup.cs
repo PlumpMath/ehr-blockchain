@@ -26,6 +26,7 @@ namespace emr_blockchain
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseStatusCodePages();
             app.UseMvc();
         }
     }
