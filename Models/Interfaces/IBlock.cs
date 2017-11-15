@@ -7,9 +7,9 @@ namespace emr_blockchain.Models
     {
         int Index { get; set;}
 
-        DateTime TimeStamp { get; set;}
+        string TimeStamp { get; set;}
 
-        List<ITransaction> Transactions { get; set;}
+        List<Transaction> Transactions { get; set;}
 
         int Proof { get; set;}
 

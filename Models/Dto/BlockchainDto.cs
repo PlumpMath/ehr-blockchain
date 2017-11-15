@@ -7,15 +7,28 @@ namespace emr_blockchain.Models.Dto
     public class BlockchainDto
     {
         private IBlockchain _chain; 
+        
+        public BlockchainDto()
+        {
+            _chain = new Blockchain();
+            _chain.Chain = new List<Block>();
+        }
+
         public BlockchainDto(IBlockchain chain) 
         {
             _chain = chain;
         }
 
         [Required]
-        public List<IBlock> Chain => _chain.Chain;
+        public List<Block> Chain 
+        {
+            get => _chain.Chain;
+        } 
         
         [Required]
-        public int Length => _chain.Chain.Count;
+        public int Length 
+        {
+            get => _chain.Chain.Count;
+        }
     }
 }

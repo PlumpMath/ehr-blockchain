@@ -11,22 +11,22 @@ namespace emr_blockchain.Models
 {
     public class Blockchain : IBlockchain
     {
-        private List<IBlock> _chain; 
-        private List<ITransaction> _currentTransactions; 
+        private List<Block> _chain; 
+        private List<Transaction> _currentTransactions; 
         private HashSet<string> _nodes; 
 
         public IBlock LastBlock => _chain[_chain.Count - 1];
-        public List<IBlock> Chain
+        public List<Block> Chain
         {
             get => _chain;
             set => _chain = value;
         }
-        public List<ITransaction> CurrentTransactions => _currentTransactions;
+        public List<Transaction> CurrentTransactions => _currentTransactions;
 
         public Blockchain()
         {
-            _chain = new List<IBlock>();
-            _currentTransactions = new List<ITransaction>();
+            _chain = new List<Block>();
+            _currentTransactions = new List<Transaction>();
             _nodes = new HashSet<string>();
 
             NewBlock(1, "100");
@@ -37,8 +37,8 @@ namespace emr_blockchain.Models
             var block = new Block()
             {
                 Index = _chain.Count + 1,
-                TimeStamp = DateTime.Now,
-                Transactions = new List<ITransaction>(_currentTransactions),
+                TimeStamp = DateTime.Now.ToString(),
+                Transactions = new List<Transaction>(_currentTransactions),
                 Proof = proof, 
                 PreviousHash = previousHash ?? Hash(LastBlock),
             };
@@ -60,7 +60,7 @@ namespace emr_blockchain.Models
             return LastBlock.Index + 1;
         }
 
-        public bool ValidChain(List<IBlock> chain)
+        public bool ValidChain(List<Block> chain)
         {
             var lastBlock = chain[0];
             int currentIndex = 1; 
@@ -78,38 +78,41 @@ namespace emr_blockchain.Models
 
         public bool ResolveConflicts()
         {
-            // var neighbors = _nodes; 
-            // var newChain = new List<IBlock>();
-            // int maxLength = _chain.Count;
+            var neighbors = _nodes; 
+            var newChain = new List<Block>();
+            int maxLength = _chain.Count;
 
-            // foreach (var node in neighbors)
-            // {
-            //     var url = $"{node}/chain";
-            //     HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
-            //     request.ContentType="application/json; charset=utf-8";
-            //     var response = (HttpWebResponse) request.GetResponse();    
-            //     string text; 
-            //     using (var sr = new StreamReader(response.GetResponseStream()))
-            //     {
-            //         text = sr.ReadToEnd();
-            //     }
-
-            //     var chainobj = JsonConvert.DeserializeObject<BlockchainDto>(text);
-            // }
-
-            string node = "http://127.0.0.1:5001";
-            var url = $"{node}/chain";
-            HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
-            request.ContentType="application/json; charset=utf-8";
-            var response = (HttpWebResponse) request.GetResponse();    
-            string text; 
-            using (var sr = new StreamReader(response.GetResponseStream()))
+            foreach (var node in neighbors)
             {
-                text = sr.ReadToEnd();
+                var url = $"{node}/chain";
+                HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
+                request.ContentType="application/json; charset=utf-8";
+                var response = (HttpWebResponse) request.GetResponse();    
+                string text; 
+                using (var sr = new StreamReader(response.GetResponseStream()))
+                {
+                    text = sr.ReadToEnd();
+                }
+
+                var chainobj = JsonConvert.DeserializeObject<BlockchainDto>(text);
+
+                var chain = chainobj.Chain;
+                var length = chainobj.Length;
+
+                if (length > maxLength && ValidChain(chain))
+                {
+                    maxLength = length; 
+                    newChain = chain;
+                }
             }
 
-            var chainobj = JsonConvert.DeserializeObject<BlockchainDto>(text);
-            return false; 
+            if (newChain.Count > 0)
+            {
+                _chain = newChain;
+                return true;
+            }
+
+            return false;
         }
 
         public int ProofOfWork(int lastProof)
@@ -148,6 +151,5 @@ namespace emr_blockchain.Models
 
             return sb.ToString();
         }
-
     }
 }

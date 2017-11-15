@@ -4,6 +4,6 @@ namespace emr_blockchain.Models
 {
     public interface IBlockchain
     {
-        List<IBlock> Chain {get; set;}
+        List<Block> Chain {get; set;}
     }
 }
