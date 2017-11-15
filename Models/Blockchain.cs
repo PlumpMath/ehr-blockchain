@@ -11,18 +11,27 @@ namespace emr_blockchain.Models
 {
     public class Blockchain : IBlockchain
     {
+        #region Private fields
+
         private List<Block> _chain; 
         private List<Transaction> _currentTransactions; 
         private HashSet<string> _nodes; 
 
+        #endregion
+
+        #region Properties    
+        public HashSet<string> Nodes => _nodes;
         public IBlock LastBlock => _chain[_chain.Count - 1];
+
         public List<Block> Chain
         {
             get => _chain;
             set => _chain = value;
         }
+
         public List<Transaction> CurrentTransactions => _currentTransactions;
 
+        #endregion
         public Blockchain()
         {
             _chain = new List<Block>();
@@ -30,6 +39,11 @@ namespace emr_blockchain.Models
             _nodes = new HashSet<string>();
 
             NewBlock(1, "100");
+        }
+
+        public void RegisterNode(string address)
+        {
+            _nodes.Add(address);
         }
         
         public IBlock NewBlock(int proof, string previousHash = null)
