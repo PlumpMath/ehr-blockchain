@@ -2,12 +2,15 @@ using Microsoft.AspNetCore.Mvc;
 using emr_blockchain.Models;
 using emr_blockchain.Models.Dto;
 using System;
+using System.Collections.Generic;
 
 namespace emr_blockchain.Controllers
 {
     public class BlockchainController : Controller
     {
-        private static Blockchain _blockchain = new Blockchain();
+        private static List<ITransaction> _transaction = new List<ITransaction>();
+        private static List<IBlock> _chain = new List<IBlock>();
+        private static Blockchain _blockchain = new Blockchain(_chain, _transaction);
 
         [HttpGet("/mine")]
         public IActionResult MineBlock()
@@ -16,8 +19,8 @@ namespace emr_blockchain.Controllers
             var lastProof = lastBlock.Proof;
             var proof = _blockchain.ProofOfWork(lastProof);
 
-            _blockchain.NewTransaction("0", "unique" ,1);
-            _blockchain.NewBlock(proof);
+            _blockchain.AddNewTransaction("0", "unique" ,1);
+            _blockchain.CreateBlock(proof);
             return Ok(_blockchain.LastBlock);
         }
 
@@ -30,8 +33,8 @@ namespace emr_blockchain.Controllers
         [HttpGet("/chain")]
         public IActionResult GetBlockchain()
         {
-            var dto = new BlockchainDto(_blockchain);
-            return Ok(dto);
+            var chainDto = new BlockchainDto(_blockchain);
+            return Ok(chainDto);
         }
 
         [HttpPost("/newtransaction")]
@@ -42,14 +45,14 @@ namespace emr_blockchain.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             
-            _blockchain.NewTransaction(transaction.Sender, transaction.Recipient, transaction.Amount);
+            _blockchain.AddNewTransaction(transaction.Sender, transaction.Recipient, transaction.Amount);
             return Created("/newtransaction", 
             new 
             { 
                 Message = "Transaction created",
                 Sender = transaction.Sender,
                 Recipient = transaction.Recipient, 
-                Amount=transaction.Amount
+                Amount = transaction.Amount
             });
         }
 
@@ -66,24 +69,24 @@ namespace emr_blockchain.Controllers
             return Created("/nodes/register", new {Message = "New nodes have been added", Nodes = _blockchain.Nodes});
         }
 
-        [HttpGet("/nodes/resolve")]
-        public IActionResult Consensus()
-        {
-            var chainReplaced = _blockchain.ResolveConflicts();
+        // [HttpGet("/nodes/resolve")]
+        // public IActionResult Consensus()
+        // {
+        //     var chainReplaced = _blockchain.ResolveConflicts();
 
-            if (chainReplaced)
-                return Ok(new {Message = "Our chain was replaced", NewChain = _blockchain.Chain} );
+        //     if (chainReplaced)
+        //         return Ok(new {Message = "Our chain was replaced", NewChain = _blockchain.Chain} );
 
-            return Ok(new {Message = "Our chain is authoritative", NewChain=_blockchain.Chain});
-        }
+        //     return Ok(new {Message = "Our chain is authoritative", NewChain=_blockchain.Chain});
+        // }
 
-        [HttpGet("/debug")]
-        public IActionResult Debug()
-        {
-            bool result = _blockchain.ValidChain(_blockchain.Chain);
-            if (result ==  false)
-                return BadRequest();
-            return Ok();
-        }
+        // [HttpGet("/debug")]
+        // public IActionResult Debug()
+        // {
+        //     bool result = _blockchain.ValidateChain(_blockchain.Chain);
+        //     if (result ==  false)
+        //         return BadRequest();
+        //     return Ok();
+        // }
     }
 }

@@ -1,34 +1,20 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace emr_blockchain.Models.Dto
 {
     public class BlockchainDto
     {
-        private IBlockchain _chain; 
-        
-        public BlockchainDto()
+        private IBlockchain _blockchain;
+        public BlockchainDto(IBlockchain blockchain)
         {
-            _chain = new Blockchain();
-            _chain.Chain = new List<Block>();
+            _blockchain = blockchain;
         }
 
-        public BlockchainDto(IBlockchain chain) 
-        {
-            _chain = chain;
-        }
+        public List<IBlock> Chain => _blockchain.Chain;
 
-        [Required]
-        public List<Block> Chain 
-        {
-            get => _chain.Chain;
-        } 
-        
-        [Required]
-        public int Length 
-        {
-            get => _chain.Chain.Count;
-        }
+        public int Length => Chain.Count;
+
+
     }
 }

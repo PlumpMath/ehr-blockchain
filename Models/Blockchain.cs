@@ -11,48 +11,49 @@ namespace emr_blockchain.Models
 {
     public class Blockchain : IBlockchain
     {
-        #region Private fields
+        #region Private Fields
 
-        private List<Block> _chain; 
-        private List<Transaction> _currentTransactions; 
+        private List<IBlock> _chain; 
+        private List<ITransaction> _currentTransactions; 
         private HashSet<string> _nodes; 
 
         #endregion
 
         #region Properties    
         public HashSet<string> Nodes => _nodes;
+
         public IBlock LastBlock => _chain[_chain.Count - 1];
 
-        public List<Block> Chain
-        {
-            get => _chain;
-            set => _chain = value;
-        }
+        public List<IBlock> Chain => _chain;
 
-        public List<Transaction> CurrentTransactions => _currentTransactions;
+        public List<ITransaction> CurrentTransactions => _currentTransactions;
 
         #endregion
-        public Blockchain()
+
+        #region Constructor
+        public Blockchain(List<IBlock> chain, List<ITransaction> currentTransactions)
         {
-            _chain = new List<Block>();
-            _currentTransactions = new List<Transaction>();
+            _chain = chain;
+            _currentTransactions = currentTransactions;
             _nodes = new HashSet<string>();
 
-            NewBlock(1, "100");
+            CreateBlock(1, "100");
         }
+        #endregion
 
+        #region Public methods
         public void RegisterNode(string address)
         {
             _nodes.Add(address);
         }
         
-        public IBlock NewBlock(int proof, string previousHash = null)
+        public IBlock CreateBlock(int proof, string previousHash = null)
         {
             var block = new Block()
             {
                 Index = _chain.Count + 1,
                 TimeStamp = DateTime.Now.ToString(),
-                Transactions = new List<Transaction>(_currentTransactions),
+                Transactions = new List<ITransaction>(_currentTransactions),
                 Proof = proof, 
                 PreviousHash = previousHash ?? Hash(LastBlock),
             };
@@ -62,7 +63,7 @@ namespace emr_blockchain.Models
             return block;
         }
 
-        public int NewTransaction(string sender, string recipient, int amount)
+        public int AddNewTransaction(string sender, string recipient, int amount)
         {
             _currentTransactions.Add(new Transaction()
             {
@@ -74,7 +75,7 @@ namespace emr_blockchain.Models
             return LastBlock.Index + 1;
         }
 
-        public bool ValidChain(List<Block> chain)
+        public bool ValidateChain(List<IBlock> chain)
         {
             var lastBlock = chain[0];
             int currentIndex = 1; 
@@ -95,41 +96,41 @@ namespace emr_blockchain.Models
 
         public bool ResolveConflicts()
         {
-            var neighbors = _nodes; 
-            var newChain = new List<Block>();
-            int maxLength = _chain.Count;
+            return false; 
+        //     var newChain = new List<IBlock>();
+        //     int maxLength = _chain.Count;
 
-            foreach (var node in neighbors)
-            {
-                var url = $"{node}/chain";
-                HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
-                request.ContentType="application/json; charset=utf-8";
-                var response = (HttpWebResponse) request.GetResponse();    
-                string text; 
-                using (var sr = new StreamReader(response.GetResponseStream()))
-                {
-                    text = sr.ReadToEnd();
-                }
+        //     foreach (var node in _nodes)
+        //     {
+        //         var url = $"{node}/chain";
+        //         HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
+        //         request.ContentType="application/json; charset=utf-8";
+        //         var response = (HttpWebResponse) request.GetResponse();    
+        //         string text; 
+        //         using (var sr = new StreamReader(response.GetResponseStream()))
+        //         {
+        //             text = sr.ReadToEnd();
+        //         }
 
-                var chainobj = JsonConvert.DeserializeObject<BlockchainDto>(text);
+        //         var chainobj = JsonConvert.DeserializeObject<BlockchainDto>(text);
 
-                var chain = chainobj.Chain;
-                var length = chainobj.Length;
+        //         var chain = chainobj.Chain;
+        //         var length = chainobj.Length;
 
-                if (length > maxLength && ValidChain(chain))
-                {
-                    maxLength = length; 
-                    newChain = chain;
-                }
-            }
+        //         if (length > maxLength && ValidateChain(chain))
+        //         {
+        //             maxLength = length; 
+        //             newChain = chain;
+        //         }
+        //     }
 
-            if (newChain.Count > 0)
-            {
-                _chain = newChain;
-                return true;
-            }
+        //     if (newChain.Count > 0)
+        //     {
+        //         _chain = newChain;
+        //         return true;
+        //     }
 
-            return false;
+        //     return false;
         }
 
         public int ProofOfWork(int lastProof)
@@ -138,21 +139,6 @@ namespace emr_blockchain.Models
             while (IsValidProof(lastProof, proof) == false)
                 proof++;
             return proof; 
-        }
-
-        private static bool IsValidProof(int prevProof, int proof)
-        {
-            var guess = Encoding.UTF8.GetBytes(String.Format("{0}{1}", prevProof, proof));
-            StringBuilder sb = new StringBuilder();
-            using (var hash = SHA256.Create())
-            {
-                var result = hash.ComputeHash(guess);
-                foreach (var b in result)
-                    sb.Append(b.ToString("x2"));
-            }
-
-            var guessHash = sb.ToString();
-            return guessHash.Substring(guessHash.Length - 4) == "0000";
         }
 
         public static string Hash(IBlock block)
@@ -168,5 +154,24 @@ namespace emr_blockchain.Models
 
             return sb.ToString();
         }
+        #endregion
+
+        #region Private Helper Methods
+        private static bool IsValidProof(int prevProof, int proof)
+        {
+            var guess = Encoding.UTF8.GetBytes(String.Format("{0}{1}", prevProof, proof));
+            StringBuilder sb = new StringBuilder();
+            using (var hash = SHA256.Create())
+            {
+                var result = hash.ComputeHash(guess);
+                foreach (var b in result)
+                    sb.Append(b.ToString("x2"));
+            }
+
+            var guessHash = sb.ToString();
+            return guessHash.Substring(guessHash.Length - 4) == "0000";
+        }
+        #endregion
+
     }
 }

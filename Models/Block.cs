@@ -9,7 +9,7 @@ namespace emr_blockchain.Models
 
         public string TimeStamp { get; set;}
 
-        public List<Transaction> Transactions { get; set;}
+        public List<ITransaction> Transactions { get; set;}
 
         public int Proof { get; set;}
 
