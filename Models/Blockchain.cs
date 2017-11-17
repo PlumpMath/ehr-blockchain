@@ -82,7 +82,10 @@ namespace emr_blockchain.Models
             {
                 var block = chain[currentIndex];
                 if (block.PreviousHash != Hash(lastBlock))
+                {
+                    var hash = Hash(lastBlock);
                     return false;
+                }
                 lastBlock  = block; 
                 currentIndex++;
             }

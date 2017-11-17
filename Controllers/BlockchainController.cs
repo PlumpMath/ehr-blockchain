@@ -77,20 +77,12 @@ namespace emr_blockchain.Controllers
             return Ok(new {Message = "Our chain is authoritative", NewChain=_blockchain.Chain});
         }
 
-        [HttpPost("/debug")]
-        public IActionResult Debug([FromBody] DebugBlockchainDto chain)
+        [HttpGet("/debug")]
+        public IActionResult Debug()
         {
-            if (chain == null)
+            bool result = _blockchain.ValidChain(_blockchain.Chain);
+            if (result ==  false)
                 return BadRequest();
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-            return Ok(chain);
-        }
-
-        [HttpGet("/debugthis")]
-        public IActionResult DebugThis()
-        {
-            _blockchain.ResolveConflicts();
             return Ok();
         }
     }
