@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System.Net;
 using System.IO;
 using emr_blockchain.Models.Dto;
+using emr_blockchain.Services;
 
 namespace emr_blockchain.Models
 {
@@ -14,12 +15,17 @@ namespace emr_blockchain.Models
         #region Private Fields
 
         private List<IBlock> _chain; 
+
         private List<ITransaction> _currentTransactions; 
+
         private HashSet<string> _nodes; 
+        
+        private IBlockchainService _blockchainService;
 
         #endregion
 
         #region Properties    
+
         public HashSet<string> Nodes => _nodes;
 
         public IBlock LastBlock => _chain[_chain.Count - 1];
@@ -31,17 +37,21 @@ namespace emr_blockchain.Models
         #endregion
 
         #region Constructor
-        public Blockchain(List<IBlock> chain, List<ITransaction> currentTransactions)
+
+        public Blockchain(List<IBlock> chain, List<ITransaction> currentTransactions, IBlockchainService service)
         {
             _chain = chain;
             _currentTransactions = currentTransactions;
             _nodes = new HashSet<string>();
+            _blockchainService = service;
 
             CreateBlock(1, "100");
         }
+
         #endregion
 
         #region Public methods
+
         public void RegisterNode(string address)
         {
             _nodes.Add(address);
@@ -101,35 +111,8 @@ namespace emr_blockchain.Models
 
             foreach (var node in _nodes)
             {
-                var url = $"{node}/chain";
-                HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
-                request.ContentType="application/json; charset=utf-8";
-                var response = (HttpWebResponse) request.GetResponse();    
-                string text; 
-                using (var sr = new StreamReader(response.GetResponseStream()))
-                {
-                    text = sr.ReadToEnd();
-                }
-
-                // Handle deserialization and conversion of DTO to model
-                var chainDto = JsonConvert.DeserializeObject<BlockchainForUpdateDto>(text);
-                var chain = new List<IBlock>();
-                foreach (var block in chainDto.Chain)
-                {
-                    var transactions = new List<ITransaction>();
-                    foreach (var transaction in block.Transactions)
-                        transactions.Add(transaction);
-                    
-                    chain.Add(new Block()
-                    {
-                        Index = block.Index,
-                        TimeStamp = block.TimeStamp,
-                        Transactions = transactions,
-                        Proof = block.Proof,
-                        PreviousHash = block.PreviousHash,
-                    });
-                }
-                var length = chainDto.Length;
+                var chain = _blockchainService.GetChainAtUri($"{node}/chain");
+                var length = _blockchainService.GetChainLengthAtUri($"{node}/chain");
                 
                 if (length > maxLength && ValidateChain(chain))
                 {

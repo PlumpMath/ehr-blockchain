@@ -3,6 +3,7 @@ using emr_blockchain.Models;
 using emr_blockchain.Models.Dto;
 using System;
 using System.Collections.Generic;
+using emr_blockchain.Services;
 
 namespace emr_blockchain.Controllers
 {
@@ -10,7 +11,9 @@ namespace emr_blockchain.Controllers
     {
         private static List<ITransaction> _transaction = new List<ITransaction>();
         private static List<IBlock> _chain = new List<IBlock>();
-        private static Blockchain _blockchain = new Blockchain(_chain, _transaction);
+        private static IBlockchainService _service = new BlockchainService();
+
+        private static Blockchain _blockchain = new Blockchain(_chain, _transaction, _service);
 
         [HttpGet("/mine")]
         public IActionResult MineBlock()
@@ -78,13 +81,6 @@ namespace emr_blockchain.Controllers
                 return Ok(new {Message = "Our chain was replaced", NewChain = _blockchain.Chain} );
 
             return Ok(new {Message = "Our chain is authoritative", NewChain= _blockchain.Chain});
-        }
-
-        [HttpGet("/debug")]
-        public IActionResult Debug()
-        {
-            _blockchain.ResolveConflicts();
-            return Ok();
         }
     }
 }
