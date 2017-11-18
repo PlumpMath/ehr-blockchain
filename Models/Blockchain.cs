@@ -96,41 +96,55 @@ namespace emr_blockchain.Models
 
         public bool ResolveConflicts()
         {
-            return false; 
-        //     var newChain = new List<IBlock>();
-        //     int maxLength = _chain.Count;
+            var newChain = new List<IBlock>();
+            int maxLength = _chain.Count;
 
-        //     foreach (var node in _nodes)
-        //     {
-        //         var url = $"{node}/chain";
-        //         HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
-        //         request.ContentType="application/json; charset=utf-8";
-        //         var response = (HttpWebResponse) request.GetResponse();    
-        //         string text; 
-        //         using (var sr = new StreamReader(response.GetResponseStream()))
-        //         {
-        //             text = sr.ReadToEnd();
-        //         }
+            foreach (var node in _nodes)
+            {
+                var url = $"{node}/chain";
+                HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
+                request.ContentType="application/json; charset=utf-8";
+                var response = (HttpWebResponse) request.GetResponse();    
+                string text; 
+                using (var sr = new StreamReader(response.GetResponseStream()))
+                {
+                    text = sr.ReadToEnd();
+                }
 
-        //         var chainobj = JsonConvert.DeserializeObject<BlockchainDto>(text);
+                // Handle deserialization and conversion of DTO to model
+                var chainDto = JsonConvert.DeserializeObject<BlockchainForUpdateDto>(text);
+                var chain = new List<IBlock>();
+                foreach (var block in chainDto.Chain)
+                {
+                    var transactions = new List<ITransaction>();
+                    foreach (var transaction in block.Transactions)
+                        transactions.Add(transaction);
+                    
+                    chain.Add(new Block()
+                    {
+                        Index = block.Index,
+                        TimeStamp = block.TimeStamp,
+                        Transactions = transactions,
+                        Proof = block.Proof,
+                        PreviousHash = block.PreviousHash,
+                    });
+                }
+                var length = chainDto.Length;
+                
+                if (length > maxLength && ValidateChain(chain))
+                {
+                    maxLength = length; 
+                    newChain = chain;
+                }
+            }
 
-        //         var chain = chainobj.Chain;
-        //         var length = chainobj.Length;
+            if (newChain.Count > 0)
+            {
+                _chain = newChain;
+                return true;
+            }
 
-        //         if (length > maxLength && ValidateChain(chain))
-        //         {
-        //             maxLength = length; 
-        //             newChain = chain;
-        //         }
-        //     }
-
-        //     if (newChain.Count > 0)
-        //     {
-        //         _chain = newChain;
-        //         return true;
-        //     }
-
-        //     return false;
+            return false;
         }
 
         public int ProofOfWork(int lastProof)

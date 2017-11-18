@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace emr_blockchain.Models.Dto
 {
-    public class DebugBlockchainDto
+    public class BlockchainForUpdateDto
     {
         [Required]
-        public List<Block> Chain 
+        public List<BlockDto> Chain 
         {
             get; set;
         }

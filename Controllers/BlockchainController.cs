@@ -69,24 +69,22 @@ namespace emr_blockchain.Controllers
             return Created("/nodes/register", new {Message = "New nodes have been added", Nodes = _blockchain.Nodes});
         }
 
-        // [HttpGet("/nodes/resolve")]
-        // public IActionResult Consensus()
-        // {
-        //     var chainReplaced = _blockchain.ResolveConflicts();
+        [HttpGet("/nodes/resolve")]
+        public IActionResult Consensus()
+        {
+            var chainReplaced = _blockchain.ResolveConflicts();
 
-        //     if (chainReplaced)
-        //         return Ok(new {Message = "Our chain was replaced", NewChain = _blockchain.Chain} );
+            if (chainReplaced)
+                return Ok(new {Message = "Our chain was replaced", NewChain = _blockchain.Chain} );
 
-        //     return Ok(new {Message = "Our chain is authoritative", NewChain=_blockchain.Chain});
-        // }
+            return Ok(new {Message = "Our chain is authoritative", NewChain= _blockchain.Chain});
+        }
 
-        // [HttpGet("/debug")]
-        // public IActionResult Debug()
-        // {
-        //     bool result = _blockchain.ValidateChain(_blockchain.Chain);
-        //     if (result ==  false)
-        //         return BadRequest();
-        //     return Ok();
-        // }
+        [HttpGet("/debug")]
+        public IActionResult Debug()
+        {
+            _blockchain.ResolveConflicts();
+            return Ok();
+        }
     }
 }
